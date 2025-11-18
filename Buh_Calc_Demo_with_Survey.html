@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Демо‑калькулятор бухгалтерских услуг</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background: #f6f8fa; }
+section { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 0 4px rgba(0,0,0,.1); }
+section h2 { margin-top: 0; font-size: 18px; }
+.badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 4px; }
+.badge.green { background: #d3f9d8; color: #096d45; }
+.badge.red { background: #fbdada; color: #b2222; }
+.badge.amber { background: #ffeeba; color: #7f6000; }
+.badge.blue { background: #dceefb; color: #006994; }
+.button { padding: 8px 16px; border: none; border-radius: 4px; background: #1d4ed8; color: #fff; cursor: pointer; font-size: 14px; }
+.button:disabled { background: #a5b4fc; cursor: default; }
+.small { font-size: 14px; color: #6b7280; }
+.label-inline { font-size: 13px; color: #374151; margin-bottom: 4px; display: block; }
+
+.form-grid { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+.form-col { min-width: 220px; flex: 1; }
+select, input[type="number"] { padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; width: 100%; }
+.checkbox-row { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.checkbox-row label { font-size: 13px; color: #374151; }
+
+.kpi-grid { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+.kpi-card { flex: 1; min-width: 180px; background: #ffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.kpi-card .label { font-size: 14px; color: #6b7280; margin-bottom: 4px; }
+.kpi-card .value { font-size: 22px; font-weight: 600; color: #0f172a; }
+.kpi-card .sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+.breakdown { margin-top: 10px; font-size: 13px; color: #374151; }
+.breakdown ul { margin: 4px 0 0 18px; padding: 0; }
+.breakdown li { margin: 2px 0; }
+
+.hint { font-size: 12px; color: #6b7280; margin-top: 6px; }
+</style>
+</head>
+<body>
+<h1>Демо‑калькулятор бухгалтерских услуг</h1>
+<p class="small">
+Этот прототип показывает, как может работать автоматизированный калькулятор услуг бухгалтера.
+Цены ориентировочные, основаны на открытых прайс‑листах компаний в Москве и регионах и приведены
+к усреднённым диапазонам.&nbsp;Цель демо&nbsp;— показать логику и убедиться, что расчёт выглядит «по‑рыночному».
+</p>
+
+<section>
+  <h2>Быстрый расчёт ежемесячной стоимости</h2>
+  <p class="small">Выберите параметры компании и нажмите «Рассчитать».</p>
+
+  <div class="form-grid">
+    <div class="form-col">
+    <label class="label-inline">Город / регион</label>
+    <select id="region">
+    <option value="msk">Москва / Московская область</option>
+    <option value="spb">Санкт‑Петербург</option>
+    <option value="big">Крупный региональный центр (Екатеринбург, Новосибирск, Казань и др.)</option>
+    <option value="medium">Средний город / областной центр</option>
+    <option value="small">Небольшой город / район</option>
+    </select>
+    </div>
+
+    <div class="form-col">
+    <label class="label-inline">Форма работы</label>
+    <select id="companyType">
+    <option value="ip">ИП</option>
+    <option value="ooo">ООО</option>
+    </select>
+    </div>
+
+    <div class="form-col">
+    <label class="label-inline">Система налогообложения</label>
+    <select id="taxSystem">
+    <option value="usn6">УСН 6% (Доходы)</option>
+    <option value="usn15">УСН 15% (Доходы‑расходы)</option>
+    <option value="osno">ОСНО</option>
+    <option value="patent">Патент</option>
+    <option value="esxn">ЕСХН</option>
+    </select>
+    </div>
+
+    <div class="form-col">
+    <label class="label-inline">Вид деятельности</label>
+    <select id="activity">
+    <option value="services">Услуги</option>
+    <option value="trade">Торговля</option>
+    <option value="production">Производство</option>
+    </select>
+    </div>
+
+    <div class="form-col">
+    <label class="label-inline">Количество сотрудников</label>
+    <select id="staff">
+    <option value="0">0 (без сотрудников)</option>
+    <option value="1-3">1–3</option>
+    <option value="4-10">4–10</option>
+    <option value="11-20">11–20</option>
+    <option value="21+">21 и более</option>
+    </select>
+    </div>
+
+    <div class="form-col">
+    <label class="label-inline">Количество документов в месяц</label>
+    <select id="docs">
+    <option value="0-20">0–20</option>
+    <option value="21-50">21–50</option>
+    <option value="51-100">51–100</option>
+    <option value="101-200">101–200</option>
+    <option value="200+">Более 200</option>
+    </select>
+    </div>
+
+    <div class="form-col">
+    <label class="label-inline">Дополнительные процессы</label>
+    <div class="checkbox-row">
+    <label><input type="checkbox" id="hasPayroll"> Ведение зарплаты и кадрового учёта</label>
+    <label><input type="checkbox" id="hasCash"> Онлайн‑касса / эквайринг</label>
+    <label><input type="checkbox" id="hasMultiBank"> Несколько банковских счетов</label>
+    </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <button class="button" onclick="calculatePrice()">Рассчитать</button>
+  </div>
+
+  <div id="resultBlock" style="margin-top:16px;"></div>
+  <div id="kpiBlock" class="kpi-grid"></div>
+  <div id="breakdownBlock" class="breakdown"></div>
+</section>
+
+<section>
+  <h2>Как это использовать в продажах</h2>
+  <p class="small">
+    На реальном проекте внутренняя логика калькулятора берётся не из усреднённых тарифов,
+    а из вашего детализированного Excel‑калькулятора (как в файле «Калькулятор_бухгалтерских_услуг…»):
+    себестоимость минуты по каждому сотруднику, набор бизнес‑процессов, наценки по режимам, разовые услуги и т.д.
+  </p>
+  <p class="small">
+    Для демо‑версии мы используем:
+  </p>
+  <ul class="small">
+    <li>Базовые цены по ИП/ООО и системам налогообложения из открытых прайс‑листов (Москва).</li>
+    <li>Коэффициенты по региону (Москва / крупный центр / обычный регион).</li>
+    <li>Надбавки за количество сотрудников, объём первички и дополнительные процессы.</li>
+    <li>Проверку, что итоговая цена попадает в ожидаемый «рыночный коридор» для выбранного региона.</li>
+  </ul>
+  <p class="hint">
+    Демо‑калькулятор можно встроить на сайт, показать на встрече с клиентом или использовать в презентации, чтобы
+    продемонстрировать, как автоматизация позволяет прозрачно считать стоимость бухгалтерского сопровождения.
+  </p>
+</section>
+
+<section>
+  <h2>Оцените демо‑калькулятор</h2>
+  <p class="small">
+    Мы сделали этот прототип, чтобы проверить, насколько такой формат расчёта бухгалтерских услуг
+    удобен и полезен для бизнеса. Пожалуйста, ответьте на несколько вопросов — это займёт 2–3 минуты
+    и поможет нам понять, стоит ли развивать калькулятор дальше и в какую сторону.
+  </p>
+
+  <p class="small">
+    Ваши ответы анонимны. Если захотите, в конце опроса сможете оставить контакты, чтобы получить доступ
+    к расширенной версии калькулятора после доработки.
+  </p>
+
+  <button class="button"
+          onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfQEhrZGEEkPfU6xlP5zv9sGYjcNSSUOKWQXl4OvNZSlc-hnw/viewform?usp=header', '_blank')">
+    Пройти короткий опрос
+  </button>
+
+  <p class="hint">
+    Опрос откроется в новой вкладке. После заполнения вы можете вернуться к демо‑калькулятору
+    и протестировать другие варианты расчёта.
+  </p>
+</section>
+
+<script>
+// БАЗОВЫЕ ТАРИФЫ (Москва, прайс "от" за ~0–20 документов, без сотрудников)
+// Ориентиры по данным открытых прайсов (например, BuhClear, Reg‑Audit, Profdelo).
+const baseTariffsMoscow = {
+  ip: {
+    usn6: 3500,   // ИП УСН 6% без сотрудников
+    usn15: 5500,  // ИП УСН 15% без сотрудников
+    osno: 14000,  // ИП ОСНО без сотрудников
+    patent: 3000, // ориентир для патента
+    esxn: 3000    // ориентир для ЕСХН
+  },
+  ooo: {
+    usn6: 8000,   // ООО УСН (до 1–3 сотрудников и небольшой документооборот)
+    usn15: 9000,  // условно немного дороже
+    osno: 15000,  // ООО ОСНО
+    patent: 0,    // не применимо, защитим в логике
+    esxn: 0    // как отдельная специфика, в демо можно не использовать
+  }
+};
+
+// КОЭФФИЦИЕНТЫ РЕГИОНА
+const regionCoef = {
+  msk: 1.00,    // Москва / МО
+  spb: 0.95,    // СПб немного ниже Москвы
+  big: 0.80,    // крупные региональные центры
+  medium: 0.65, // обычный областной центр
+  small: 0.55   // небольшие города / районы
+};
+
+// КОЭФФИЦИЕНТ ВИДА ДЕЯТЕЛЬНОСТИ
+const activityCoef = {
+  services: 1.00,
+  trade: 1.05,
+  production: 1.15
+};
+
+// НАДБАВКИ ЗА КОЛИЧЕСТВО СОТРУДНИКОВ (руб/мес)
+const staffAdd = {
+  "0": 0,
+  "1-3": 2000,
+  "4-10": 4000,
+  "11-20": 7000,
+  "21+": 10000
+};
+
+// НАДБАВКИ ЗА КОЛИЧЕСТВО ДОКУМЕНТОВ (руб/мес)
+const docsAdd = {
+  "0-20": 0,
+  "21-50": 1500,
+  "51-100": 3500,
+  "101-200": 7000,
+  "200+": 12000
+};
+
+// НАДБАВКИ ЗА ДОП. ПРОЦЕССЫ
+const extrasAdd = {
+  payroll: 2500,    // зарплата и кадры
+  cash: 1500,    // онлайн‑касса, эквайринг
+  multiBank: 1000   // несколько банков
+};
+
+function formatRuble(value) {
+  return Math.round(value).toLocaleString('ru-RU') + ' ₽';
+}
+
+function calculatePrice() {
+  const region = document.getElementById('region').value;
+  const companyType = document.getElementById('companyType').value; // ip / ooo
+  const taxSystem = document.getElementById('taxSystem').value;    // usn6, usn15, osno, patent, esxn
+  const activity = document.getElementById('activity').value;
+  const staff = document.getElementById('staff').value;
+  const docs = document.getElementById('docs').value;
+  const hasPayroll = document.getElementById('hasPayroll').checked;
+  const hasCash = document.getElementById('hasCash').checked;
+  const hasMultiBank = document.getElementById('hasMultiBank').checked;
+
+  const resultBlock = document.getElementById('resultBlock');
+  const kpiBlock = document.getElementById('kpiBlock');
+  const breakdownBlock = document.getElementById('breakdownBlock');
+
+  resultBlock.innerHTML = '';
+  kpiBlock.innerHTML = '';
+  breakdownBlock.innerHTML = '';
+
+  // Проверка совместимости режимов
+  if (companyType === 'ooo' && (taxSystem === 'patent' || taxSystem === 'esxn')) {
+    resultBlock.innerHTML = '<span class="badge amber">Обратите внимание</span> ' +
+    'Патент и ЕСХН в демо калькуляторе доступны только для ИП. ' +
+    'Выберите другой режим или форму работы.';
+    return;
+  }
+
+  // Базовый тариф по Москве
+  const baseMsk = baseTariffsMoscow[companyType][taxSystem] || 0;
+  if (!baseMsk) {
+    resultBlock.innerHTML = '<span class="badge amber">Нет данных</span> ' +
+    'Для выбранной комбинации формы и режима пока не задан базовый тариф. ' +
+    'В боевой версии сюда подставляется ваша внутренняя цена.';
+    return;
+  }
+
+  const coefRegion = regionCoef[region] || 1;
+  const coefActivity = activityCoef[activity] || 1;
+
+  let price = baseMsk * coefRegion * coefActivity;
+
+  // Надбавки
+  const addStaff = staffAdd[staff] || 0;
+  const addDocs = docsAdd[docs] || 0;
+  let addExtras = 0;
+  if (hasPayroll) addExtras += extrasAdd.payroll;
+  if (hasCash) addExtras += extrasAdd.cash;
+  if (hasMultiBank) addExtras += extrasAdd.multiBank;
+
+  price += addStaff + addDocs + addExtras;
+
+  // Минимальный порог, чтобы не падать слишком низко на регионах
+  if (price < 2000) price = 2000;
+
+  // «Рыночный коридор» ±20%
+  const minMarket = price * 0.8;
+  const maxMarket = price * 1.2;
+
+  let badgeClass = 'blue';
+  let badgeText = 'В рамках рынка';
+  // Для демо считаем, что мы целимся в середину коридора
+  // Можно добавить сдвиг позже, если захотите показаться «ниже рынка».
+  // price сравнивать особо не с чем, так что просто показываем статус "в рамках".
+  // Но оставим задел на "ниже/выше", если будет нужна доработка.
+
+  resultBlock.innerHTML =
+    '<div><span class="badge ' + badgeClass + '">' + badgeText + '</span> ' +
+    'Расчётная стоимость сопровождения: <strong>' + formatRuble(price) + '</strong> в месяц</div>' +
+    '<div class="small" style="margin-top:4px;">' +
+    'Ориентировочный диапазон по рынку для выбранной конфигурации: ' +
+    '<strong>' + formatRuble(minMarket) + ' – ' + formatRuble(maxMarket) +
+    '</strong> в месяц.' +
+    '</div>';
+
+  // KPI‑карточки
+  const kpis = [
+    {
+    label: 'Базовый тариф (Москва, без надбавок)',
+    value: formatRuble(baseMsk),
+    sub: companyType.toUpperCase() + ', ' + toHumanTax(taxSystem)
+    },
+    {
+    label: 'Коррекция по региону и отрасли',
+    value: formatRuble(baseMsk * coefRegion * coefActivity),
+    sub: 'Коэф. региона × вида деятельности'
+    },
+    {
+    label: 'Надбавка за сотрудников',
+    value: formatRuble(addStaff),
+    sub: staffLabel(staff)
+    },
+    {
+    label: 'Надбавка за документооборот',
+    value: formatRuble(addDocs),
+    sub: docsLabel(docs)
+    },
+    {
+    label: 'Доп. процессы',
+    value: formatRuble(addExtras),
+    sub: extrasLabel(hasPayroll, hasCash, hasMultiBank) || 'Не выбраны'
+    }
+  ];
+
+  kpis.forEach(k => {
+    const card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.innerHTML =
+    '<div class="label">' + k.label + '</div>' +
+    '<div class="value">' + k.value + '</div>' +
+    (k.sub ? '<div class="sub">' + k.sub + '</div>' : '');
+    kpiBlock.appendChild(card);
+  });
+
+  // Текстовая расшифровка
+  const breakdownLines = [];
+  breakdownLines.push('• В качестве базы взята цена московских аутсорсинговых бухгалтерий для ' +
+    (companyType === 'ip' ? 'ИП' : 'ООО') + ' на ' + toHumanTax(taxSystem) +
+    ' (по открытым прайсам BuhClear, Reg‑Audit, Profdelo и др.).');
+
+  breakdownLines.push('• Затем применены коэффициенты по региону (' + regionLabel(region) +
+    ') и виду деятельности (' + activityLabel(activity) + ').');
+
+  breakdownLines.push('• Добавлены надбавки за ' + staffLabel(staff).toLowerCase() +
+    ' и документооборот (' + docsLabel(docs).toLowerCase() + ').');
+
+  if (hasPayroll || hasCash || hasMultiBank) {
+    breakdownLines.push('• Отдельно учтены дополнительные процессы: ' +
+    extrasLabel(hasPayroll, hasCash, hasMultiBank) + '.');
+  }
+
+  breakdownLines.push('• В реальном калькуляторе эти цифры могут быть привязаны к вашему Excel‑файлу ' +
+    'с себестоимостью минуты по сотрудникам и набору бизнес‑процессов, а демо‑версия показывает ' +
+    'приближённый «рыночный» результат.');
+
+  breakdownBlock.innerHTML =
+    '<div><strong>Как сформировалась цена:</strong></div>' +
+    '<ul>' + breakdownLines.map(li => '<li>' + li + '</li>').join('') + '</ul>' +
+    '<div class="hint">Данные носят демонстрационный характер и не являются публичной офертой.</div>';
+}
+
+function toHumanTax(code) {
+  switch (code) {
+    case 'usn6': return 'УСН 6% (Доходы)';
+    case 'usn15': return 'УСН 15% (Доходы‑расходы)';
+    case 'osno': return 'ОСНО';
+    case 'patent': return 'Патент';
+    case 'esxn': return 'ЕСХН';
+    default: return '';
+  }
+}
+
+function staffLabel(code) {
+  switch (code) {
+    case '0': return 'Без сотрудников';
+    case '1-3': return '1–3 сотрудника';
+    case '4-10': return '4–10 сотрудников';
+    case '11-20': return '11–20 сотрудников';
+    case '21+': return '21+ сотрудников';
+    default: return '';
+  }
+}
+
+function docsLabel(code) {
+  switch (code) {
+    case '0-20': return '0–20 документов в месяц';
+    case '21-50': return '21–50 документов в месяц';
+    case '51-100': return '51–100 документов в месяц';
+    case '101-200': return '101–200 документов в месяц';
+    case '200+': return 'более 200 документов в месяц';
+    default: return '';
+  }
+}
+
+function extrasLabel(payroll, cash, multiBank) {
+  const parts = [];
+  if (payroll) parts.push('зарплата и кадровый учёт');
+  if (cash) parts.push('онлайн‑касса / эквайринг');
+  if (multiBank) parts.push('несколько банковских счетов');
+  return parts.join(', ');
+}
+
+function regionLabel(code) {
+  switch (code) {
+    case 'msk': return 'Москва / МО';
+    case 'spb': return 'Санкт‑Петербург';
+    case 'big': return 'крупный региональный центр';
+    case 'medium': return 'средний город / областной центр';
+    case 'small': return 'небольшой город / район';
+    default: return '';
+  }
+}
+
+function activityLabel(code) {
+  switch (code) {
+    case 'services': return 'услуги';
+    case 'trade': return 'торговля';
+    case 'production': return 'производство';
+    default: return '';
+  }
+}
+
+// Можно сразу показать дефолтный сценарий при загрузке
+window.addEventListener('DOMContentLoaded', () => {
+  calculatePrice();
+});
+</script>
+</body>
+</html>
